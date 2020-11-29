@@ -2,6 +2,7 @@ from subprocess import PIPE, Popen
 from re import search, compile
 from threading import Thread
 from multiprocessing import Process
+from os.path import isfile
 import time
 
 def consoleInput():
@@ -39,6 +40,8 @@ def customCommand(process,command,player="The Server"):
         serverCommand(process,"tellraw @a {\"text\":\"51109066175183\",\"color\":\"green\",\"clickEvent\":{\"action\":\"copy_to_clipboard\",\"value\":\"51109066175183\"}}")
     elif args[0] == "clear":
         serverCommand(process,"tellraw @a \""+"\\n"*500+"\"")
+    elif args[0] == "shadow":
+        serverCommand(process,"player "+player+" shadow")
     elif args[0] in ["restart","stop"]:
         if player.lower() in ops:
             serverCommand(process,"say Server Restarting in 3...")
@@ -78,7 +81,13 @@ def consoleOutput():
     while True:
         if process != None and process.poll() == None:
             for line in process.stdout:
-                line = str(line.rstrip())[2:len(line)]
+                if islinux:
+                    #Interpret Linux
+                    line = str(line)
+                    line = line[2:len(line)-3]
+                else:
+                    #Interpret Windows (unknown function for mac)
+                    line = str(line.rstrip())[2:len(line)]
                 print(line)
                 if playerReg(line):
                     customCommand(process,line[line.index(">")+3:],line[line.index("<")+1:line.index(">")])
@@ -98,14 +107,18 @@ def consoleOutput():
 
 
 if __name__ == '__main__':
+    islinux = isfile("islinux")
+    if islinux:
+        print("[Server Hoster] Linux detected.")
     ops = ["The Server"]
     try:
         opsFile = open("ops.txt","r")
         opsFileText = opsFile.read()
         opsFile.close()
         for i in opsFileText.split("\n"):
-            print("[Server Hoster] OP Loaded: "+i)
-            ops.append(i)
+            if i != "":
+                print("[Server Hoster] OP Loaded: "+i)
+                ops.append(i)
     except:
         opsFile = open("ops.txt","w+")
         opsFile.write("Enter OPS here, with a new line in between each player (Replace this line)")

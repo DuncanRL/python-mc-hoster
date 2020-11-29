@@ -1,1 +1,0 @@
-java -XX:ParallelGCThreads=2 -Xms1G -Xmx4G -Dfml.readTimeout=60 -jar fabric-server-launch.jar nogui

@@ -37,11 +37,41 @@ def customCommand(process,command,player="The Server"):
     args = command.split(" ")
 
     if args[0] == "seed":
-        serverCommand(process,"tellraw @a {\"text\":\"51109066175183\",\"color\":\"green\",\"clickEvent\":{\"action\":\"copy_to_clipboard\",\"value\":\"51109066175183\"}}")
+        #minecraftjson.com
+        #{"jformat":6,"jobject":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"font":null,"color":"none","insertion":"","click_event_type":0,"click_event_value":"","hover_event_type":0,"hover_event_value":"","hover_event_object":{},"hover_event_children":[],"id":"221e4bb0-9da9-40f9-b263-d7d4038f82dc","text":"Seed: ["},{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"font":null,"color":"green","insertion":"","click_event_type":"5","click_event_value":"51109066175183","hover_event_type":"1","hover_event_value":"","hover_event_object":{},"hover_event_children":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"font":null,"color":"none","insertion":"","click_event_type":0,"click_event_value":"","hover_event_type":0,"hover_event_value":"","hover_event_object":{},"hover_event_children":[],"id":"c5465ff7-8419-406b-a3d7-a2826df00a18","text":"Click to Copy to Clipboard"}],"id":"9e517b3b-d072-4ace-a074-d5ff729bcf9c","text":"51109066175183"},{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"font":null,"color":"none","insertion":"","click_event_type":0,"click_event_value":"","hover_event_type":0,"hover_event_value":"","hover_event_object":{},"hover_event_children":[],"id":"52be9410-07e4-4172-8887-81189f98f24e","text":"]"}],"command":"tellraw @a %s","jtemplate":"tellraw"}
+        serverCommand(process,"tellraw @a [\"\",{\"text\":\"Seed: [\"},{\"text\":\"51109066175183\",\"color\":\"green\",\"clickEvent\":{\"action\":\"copy_to_clipboard\",\"value\":\"51109066175183\"},\"hoverEvent\":{\"action\":\"show_text\",\"contents\":{\"text\":\"Click to Copy to Clipboard\"}}},{\"text\":\"]\"}]")
+    elif args[0] == "help":
+        #https://pastebin.com/raw/LbiSVzQu
+        #minecraftjson.com
+        #{"jformat":6,"jobject":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"font":null,"color":"none","insertion":"","click_event_type":0,"click_event_value":"","hover_event_type":0,"hover_event_value":"","hover_event_object":{},"hover_event_children":[],"id":"475cb068-cad5-480b-8e25-8278bf39d877","text":"Help: ["},{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"font":null,"color":"green","insertion":"","click_event_type":"1","click_event_value":"https://pastebin.com/raw/LbiSVzQu","hover_event_type":"1","hover_event_value":"","hover_event_object":{},"hover_event_children":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"font":null,"color":"none","insertion":"","click_event_type":0,"click_event_value":"","hover_event_type":0,"hover_event_value":"","hover_event_object":{},"hover_event_children":[],"id":"c360123b-d3aa-4bef-b0d9-b8357ea37bdc","text":"Click to Open Link"}],"id":"f075467e-18e3-492f-9c76-1523b42b941c","text":"Command List"},{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"font":null,"color":"none","insertion":"","click_event_type":0,"click_event_value":"","hover_event_type":0,"hover_event_value":"","hover_event_object":{},"hover_event_children":[],"id":"c16eea83-be6a-4095-be6d-11d1ec104069","text":"]"}],"command":"tellraw @a %s","jtemplate":"tellraw"}
+        serverCommand(process,"tellraw @a [\"\",{\"text\":\"Help: [\"},{\"text\":\"Command List\",\"color\":\"green\",\"clickEvent\":{\"action\":\"open_url\",\"value\":\"https:\/\/pastebin.com\/raw\/LbiSVzQu\"},\"hoverEvent\":{\"action\":\"show_text\",\"contents\":{\"text\":\"Click to Open Link\"}}},{\"text\":\"]\"}]")
     elif args[0] == "clear":
         serverCommand(process,"tellraw @a \""+"\\n"*500+"\"")
     elif args[0] == "shadow":
-        serverCommand(process,"player "+player+" shadow")
+        if len(args) == 1:
+            serverCommand(process,"player "+player+" shadow")
+        elif len(args) == 2:
+                serverCommand(process,"tell "+player+" Invalid arguments! Please use one of the following:")
+                serverCommand(process,"tell "+player+" !shadow")  
+                serverCommand(process,"tell "+player+" !shadow [use|attack] [interval]")
+                serverCommand(process,"tell "+player+" For interval, 20 ticks = 1 second.")
+        elif len(args) == 3:
+            if args[1] in ["attack","use"]:
+                try:
+                    interval = int(args[2])
+                    if interval < 2:
+                        serverCommand(process,"tell "+player+" Interval must be an integer above 1!")
+                    else:
+                        serverCommand(process,"player "+player+" shadow")
+                        serverCommand(process,"player "+player+" "+args[1]+" interval "+str(interval))
+                except:
+                    serverCommand(process,"tell "+player+" Interval must be an integer above 1!")
+
+            else:
+                serverCommand(process,"tell "+player+" Invalid arguments! Please use one of the following:")
+                serverCommand(process,"tell "+player+" !shadow")  
+                serverCommand(process,"tell "+player+" !shadow [use|attack] [interval]")
+                serverCommand(process,"tell "+player+" For interval, 20 ticks = 1 second.")
     elif args[0] in ["restart","stop"]:
         if player.lower() in ops:
             serverCommand(process,"say Server Restarting in 3...")

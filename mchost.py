@@ -2,8 +2,8 @@ from subprocess import PIPE, Popen
 from re import search, compile
 from threading import Thread
 from multiprocessing import Process
-from os.path import isfile
 import time
+from sys import platform
 
 def serverCommand(process,text):
     args = text.split(" ")
@@ -186,7 +186,7 @@ def consoleOutput():
 
 
 if __name__ == '__main__':
-    islinux = isfile("islinux")
+    islinux = platform == "linux"
     if islinux:
         print("[Server Hoster] Linux detected.")
     ops = ["the server"]
@@ -224,7 +224,10 @@ if __name__ == '__main__':
     consoleOutputThread.start()
 
     while ServerRestarts:
-        MCServer = Popen(popenCommand,cwd="server",stdin=PIPE,stdout=PIPE,stderr=PIPE, close_fds=True)
+        if platform in ["win32","win64"]:
+            MCServer = Popen(popenCommand,cwd="server",stdin=PIPE,stdout=PIPE,stderr=PIPE, close_fds=True)
+        elif islinux:
+            MCServer = Popen(["/bin/bash", "-c", popenCommand],cwd="server",stdin=PIPE,stdout=PIPE,stderr=PIPE, close_fds=True)
 
         while MCServer.poll() == None:
             time.sleep(0.1)

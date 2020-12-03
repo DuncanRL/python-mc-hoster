@@ -5,33 +5,25 @@ from multiprocessing import Process
 from os.path import isfile
 import time
 
-def consoleInput():
-    global ServerLoaded
-    process = getServer()
-    while True:
-        inp = input()
-        process = getServer()
-        if process != None and process.poll() == None:
-            if ServerLoaded:
-                if inp == "fullstop":
-                    print("[Server Hoster] Executing fullstop")
-                    customCommand(process,"fullstop")
-                else:
-                    serverCommand(process,inp)
-            else:
-                print("[Server Hoster] Server not yet loaded")
-        else:
-            if not ServerRestarts:
-                exit()
-            print("[Server Hoster] No server process")
-
 def serverCommand(process,text):
-    global ServerLoaded
-    process.stdin.write((text+"\n").encode())
-    if ServerLoaded:
-        process.stdin.flush()
+    args = text.split(" ")
+    if len(args) >= 3 and [args[0],args[1],args[2]] == ["tell","the","server"]:
+        print(text[16:])
+    else:
+        global ServerLoaded
+        process.stdin.write((text+"\n").encode())
+        if ServerLoaded:
+            process.stdin.flush()
 
-def customCommand(process,command,player="The Server"):
+def rewriteOps():
+    global ops
+    opsFile = open("ops.txt","w+")
+    for i in ops:
+        if i != "the server":
+                opsFile.write(i+"\n")
+    opsFile.close()
+
+def customCommand(process,command,player="the server"):
     global ServerRestarts, ServerLoaded
 
     args = command.split(" ")
@@ -51,10 +43,7 @@ def customCommand(process,command,player="The Server"):
         if len(args) == 1:
             serverCommand(process,"player "+player+" shadow")
         elif len(args) == 2:
-                serverCommand(process,"tell "+player+" Invalid arguments! Please use one of the following:")
-                serverCommand(process,"tell "+player+" !shadow")  
-                serverCommand(process,"tell "+player+" !shadow [use|attack] [interval]")
-                serverCommand(process,"tell "+player+" For interval, 20 ticks = 1 second.")
+                serverCommand(process,"tell "+player+" Invalid arguments! Type !help for help.")
         elif len(args) == 3:
             if args[1] in ["attack","use"]:
                 try:
@@ -68,10 +57,7 @@ def customCommand(process,command,player="The Server"):
                     serverCommand(process,"tell "+player+" Interval must be an integer above 1!")
 
             else:
-                serverCommand(process,"tell "+player+" Invalid arguments! Please use one of the following:")
-                serverCommand(process,"tell "+player+" !shadow")  
-                serverCommand(process,"tell "+player+" !shadow [use|attack] [interval]")
-                serverCommand(process,"tell "+player+" For interval, 20 ticks = 1 second.")
+                serverCommand(process,"tell "+player+" Invalid arguments! Type !help for help.")
     elif args[0] in ["restart","stop"]:
         if player.lower() in ops:
             serverCommand(process,"say Server Restarting in 3...")
@@ -92,6 +78,45 @@ def customCommand(process,command,player="The Server"):
             ServerLoaded = False
         else:
             serverCommand(process,"tell "+player+" You don't have permission!")
+    elif args[0] == "killserver":
+        if player.lower() in ops:
+            ServerRestarts = False
+            ServerLoaded = False
+            process.kill()
+            process.terminate()
+        else:
+            serverCommand(process,"tell "+player+" You don't have permission!")
+    elif args[0] == "ops":
+        if player.lower() in ops:
+            if len(args) == 2 and args[1] == "list":
+                opsString = ""
+                for i in ops:
+                    if i != "the server":
+                        opsString += ", " + i
+                serverCommand(process,"tell "+player+" Server Manager Operators: "+opsString[2:])
+            elif len(args) == 3:
+                args[2] = args[2].lower()
+                if args[1] == "remove":
+                    serverCommand(process,"tell "+player+" Removing '"+args[2]+"' from server manager operators.")
+                    try:
+                        ops.remove(args[2])
+                        rewriteOps()
+                    except:
+                        serverCommand(process,"tell "+player+" Player is not a server manager operator.")
+                    
+                elif args[1] == "add":
+                    if args[2] in ops:
+                        serverCommand(process,"tell "+player+" Player already a server manager operator.")
+                    else:
+                        serverCommand(process,"tell "+player+" Adding '"+args[2]+"' to server manager operators.")
+                        ops.append(args[2])
+                        rewriteOps()
+                else:
+                    serverCommand(process,"tell "+player+" Invalid arguments! Type !help for help.")
+            else:
+                serverCommand(process,"tell "+player+" Invalid arguments! Type !help for help.")
+        else:
+            serverCommand(process,"tell "+player+" You don't have permission!")
     else:
         serverCommand(process,"tell "+player+" Invalid command.")
 
@@ -100,6 +125,30 @@ def customCommand(process,command,player="The Server"):
 def getServer():
     global MCServer
     return MCServer
+
+def consoleInput():
+    global ServerLoaded
+    process = getServer()
+    while True:
+        inp = input()
+        process = getServer()
+        if process != None and process.poll() == None:
+            if ServerLoaded:
+                if inp == "fullstop":
+                    print("[Server Hoster] Executing fullstop")
+                    customCommand(process,"fullstop")
+                elif inp.split(" ")[0] == "ops":
+                    customCommand(process,inp)
+                elif inp == "killserver":
+                    customCommand(process,inp)
+                else:
+                    serverCommand(process,inp)
+            else:
+                print("[Server Hoster] Server not yet loaded")
+        else:
+            if not ServerRestarts:
+                exit()
+            print("[Server Hoster] No server process")
 
 def consoleOutput():
     global ServerRestarts, ServerLoaded
@@ -140,7 +189,7 @@ if __name__ == '__main__':
     islinux = isfile("islinux")
     if islinux:
         print("[Server Hoster] Linux detected.")
-    ops = ["The Server"]
+    ops = ["the server"]
     try:
         opsFile = open("ops.txt","r")
         opsFileText = opsFile.read()
@@ -148,7 +197,7 @@ if __name__ == '__main__':
         for i in opsFileText.split("\n"):
             if i != "":
                 print("[Server Hoster] OP Loaded: "+i)
-                ops.append(i)
+                ops.append(i.lower())
     except:
         opsFile = open("ops.txt","w+")
         opsFile.write("Enter OPS here, with a new line in between each player (Replace this line)")
@@ -164,9 +213,6 @@ if __name__ == '__main__':
         runFile.write(popenCommand)
         runFile.close()
 
-    for i in range(len(ops)):
-        ops[i] = ops[i].lower()
-
     ServerRestarts = True
     MCServer = None
     ServerLoaded = False
@@ -178,9 +224,8 @@ if __name__ == '__main__':
     consoleOutputThread.start()
 
     while ServerRestarts:
-        MCServer = Popen(popenCommand,cwd="server",stdin=PIPE,stdout=PIPE,stderr=PIPE, close_fds=True, shell=True)
+        MCServer = Popen(popenCommand,cwd="server",stdin=PIPE,stdout=PIPE,stderr=PIPE, close_fds=True)
 
         while MCServer.poll() == None:
             time.sleep(0.1)
-        MCServer.terminate()
     print("[Server Hoster] Enter to exit...")

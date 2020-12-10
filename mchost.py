@@ -122,6 +122,7 @@ def customCommand(process, command, player="the server"):
             serverCommand(process, "say Ending server")
             serverCommand(process, "stop")
             serverLoaded = False
+            DiscordWebhook(url=DiscordWebhookURL,content="Server host has been stopped.",username="Server Hoster").execute()
         else:
             serverCommand(process, "tell "+player +
                           " You don't have permission!")
@@ -326,8 +327,20 @@ def discordProcessing(discordMessageQueue, DiscordWebhookURL):
                            content=message, username=player, avatar_url="https://crafatar.com/renders/head/"+getUUID(player)+"?overlay").execute()
 
 
-def runBot(bot, token):
-    bot.run(token)
+def serverRestarter():
+    global serverRestarts, serverLoaded, mcServer
+    while serverRestarts:
+        if platform in ["win32", "win64"]:
+            mcServer = Popen(popenCommand, cwd="server", stdin=PIPE,
+                             stdout=PIPE, stderr=PIPE, close_fds=True)
+        elif islinux:
+            mcServer = Popen(["/bin/bash", "-c", popenCommand], cwd="server",
+                             stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
+
+        while mcServer.poll() == None:
+            time.sleep(0.1)
+    exit()
+
 
 def playerListUpdate():
     global playerList, updatePlayerList
@@ -414,20 +427,17 @@ if __name__ == '__main__':
         discordProcessingThread.start()
 
         discordBot = ReaderBot()
-        botThread = Thread(target=runBot, args=[discordBot, discordToken])
-        botThread.start()
         DiscordWebhook(url=DiscordWebhookURL,content="Server host has started.",username="Server Hoster").execute()
+    
+    serverRestarterThread = Thread(target=serverRestarter,args=[])
+    serverRestarterThread.start()
 
-    while serverRestarts:
-        if platform in ["win32", "win64"]:
-            mcServer = Popen(popenCommand, cwd="server", stdin=PIPE,
-                             stdout=PIPE, stderr=PIPE, close_fds=True)
-        elif islinux:
-            mcServer = Popen(["/bin/bash", "-c", popenCommand], cwd="server",
-                             stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
-
-        while mcServer.poll() == None:
-            time.sleep(0.1)
     if hasDiscord:
-        DiscordWebhook(url=DiscordWebhookURL,content="Server host has been stopped.",username="Server Hoster").execute()
+        discordBot.run(discordToken)
+
+    while mcServer.poll() == None:
+        time.sleep(0.1)
+
+    if hasDiscord:
+        DiscordWebhook(url=DiscordWebhookURL,content="Server host has finished shutting down.",username="Server Hoster").execute()
     print("[Server Hoster] Enter to exit...")

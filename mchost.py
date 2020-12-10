@@ -294,24 +294,23 @@ class ReaderBot(discord.Client):
                     DiscordWebhook(url=DiscordWebhookURL,content="Players Online ("+str(totalPlayers)+"): "+listString(playerList),username="Server Hoster").execute()
                 else:
                     DiscordWebhook(url=DiscordWebhookURL,content="Server currently not loaded.",username="Server Hoster").execute()
-            else:
-                if not message.author.bot:                
-                    if serverLoaded:
-                        player = str(message.author)
-                        player = player[:len(player)-5]
-                        serverCommand(
-                            getServer(), "tellraw @a \"[Discord] <"+player+"> "+dumps(content)[1:])
-                    else:
-                        DiscordWebhook(url=DiscordWebhookURL,content="Server currently not loaded.",username="Server Hoster").execute()
-                if content[:6] == "!clear":
-                    if not message.author.bot:
-                        customCommand(getServer(),"clear")
-                    messages = await message.channel.history().flatten()
-                    for i in messages:
-                        await i.delete()
+            if not message.author.bot:
+                if serverLoaded:
+                    player = str(message.author)
+                    player = player[:len(player)-5]
+                    serverCommand(
+                        getServer(), "tellraw @a \"[Discord] <"+player+"> "+dumps(content)[1:])
+                else:
+                    DiscordWebhook(url=DiscordWebhookURL,content="Server currently not loaded.",username="Server Hoster").execute()
+            if content[:6] == "!clear":
+                if not message.author.bot:
+                    customCommand(getServer(),"clear")
+                messages = await message.channel.history().flatten()
+                for i in messages:
+                    await i.delete()
 
-                if content == "Server host has been stopped." and message.author.bot and str(message.author) == "Server Hoster#0000":
-                    await self.close()
+            elif content == "Server host has been stopped." and message.author.bot and str(message.author) == "Server Hoster#0000":
+                await self.close()
 
 
 def discordProcessing(discordMessageQueue, DiscordWebhookURL):

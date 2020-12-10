@@ -32,6 +32,7 @@ except:
 def getUUID(Username):
     return str(uuid.UUID(mcuuid.GetPlayerData(Username).uuid))
 
+
 def listString(x):
     try:
         xLen = len(x)
@@ -122,7 +123,8 @@ def customCommand(process, command, player="the server"):
             serverCommand(process, "say Ending server")
             serverCommand(process, "stop")
             serverLoaded = False
-            DiscordWebhook(url=DiscordWebhookURL,content="Server host has been stopped.",username="Server Hoster").execute()
+            DiscordWebhook(url=DiscordWebhookURL, content="Server host has been stopped.",
+                           username="Server Hoster").execute()
         else:
             serverCommand(process, "tell "+player +
                           " You don't have permission!")
@@ -196,7 +198,7 @@ def consoleInput():
                     customCommand(process, "fullstop")
                 elif inp[:4] == "list":
                     playerListUpdate()
-                    print("[Server Hoster] Players: ",end="")
+                    print("[Server Hoster] Players: ", end="")
                     if len(playerList) == 1:
                         if playerList[0] == "":
                             print("Nobody Online")
@@ -258,13 +260,15 @@ def consoleOutput():
                 if stopReg(line):
                     serverLoaded = False
                     if hasDiscord:
-                        DiscordWebhook(url=DiscordWebhookURL,content="Server has stopped.",username="Server Hoster").execute()
+                        DiscordWebhook(
+                            url=DiscordWebhookURL, content="Server has stopped.", username="Server Hoster").execute()
                 if doneReg(line):
                     print("[Server Hoster] Server is now loaded; ready for inputs.")
                     serverLoaded = True
                     process.stdin.flush()
                     if hasDiscord:
-                        DiscordWebhook(url=DiscordWebhookURL,content="Server has loaded.",username="Server Hoster").execute()
+                        DiscordWebhook(
+                            url=DiscordWebhookURL, content="Server has loaded.", username="Server Hoster").execute()
 
         else:
             if not serverRestarts:
@@ -291,9 +295,11 @@ class ReaderBot(discord.Client):
                     else:
                         totalPlayers = len(playerList)
 
-                    DiscordWebhook(url=DiscordWebhookURL,content="Players Online ("+str(totalPlayers)+"): "+listString(playerList),username="Server Hoster").execute()
+                    DiscordWebhook(url=DiscordWebhookURL, content="Players Online ("+str(
+                        totalPlayers)+"): "+listString(playerList), username="Server Hoster").execute()
                 else:
-                    DiscordWebhook(url=DiscordWebhookURL,content="Server currently not loaded.",username="Server Hoster").execute()
+                    DiscordWebhook(
+                        url=DiscordWebhookURL, content="Server currently not loaded.", username="Server Hoster").execute()
             if not message.author.bot:
                 if serverLoaded:
                     player = str(message.author)
@@ -301,10 +307,11 @@ class ReaderBot(discord.Client):
                     serverCommand(
                         getServer(), "tellraw @a \"[Discord] <"+player+"> "+dumps(content)[1:])
                 else:
-                    DiscordWebhook(url=DiscordWebhookURL,content="Server currently not loaded.",username="Server Hoster").execute()
+                    DiscordWebhook(
+                        url=DiscordWebhookURL, content="Server currently not loaded.", username="Server Hoster").execute()
             if content[:6] == "!clear":
                 if not message.author.bot:
-                    customCommand(getServer(),"clear")
+                    customCommand(getServer(), "clear")
                 messages = await message.channel.history().flatten()
                 for i in messages:
                     await i.delete()
@@ -355,8 +362,9 @@ def playerListHandler():
             time.sleep(0.1)
             if not serverRestarts:
                 exit()
-        serverCommand(getServer(),"list")
+        serverCommand(getServer(), "list")
         time.sleep(0.1)
+
 
 if __name__ == '__main__':
     islinux = platform == "linux"
@@ -399,7 +407,7 @@ if __name__ == '__main__':
     consoleOutputThread = Thread(target=consoleOutput, args=[])
     consoleOutputThread.start()
 
-    playerListHandlerThread = Thread(target=playerListHandler,args=[])
+    playerListHandlerThread = Thread(target=playerListHandler, args=[])
     playerListHandlerThread.start()
 
     hasDiscord = False
@@ -425,9 +433,10 @@ if __name__ == '__main__':
         discordProcessingThread.start()
 
         discordBot = ReaderBot()
-        DiscordWebhook(url=DiscordWebhookURL,content="Server host has started.",username="Server Hoster").execute()
-    
-    serverRestarterThread = Thread(target=serverRestarter,args=[])
+        DiscordWebhook(url=DiscordWebhookURL, content="Server host has started.",
+                       username="Server Hoster").execute()
+
+    serverRestarterThread = Thread(target=serverRestarter, args=[])
     serverRestarterThread.start()
 
     if hasDiscord:
@@ -437,5 +446,6 @@ if __name__ == '__main__':
         time.sleep(0.1)
 
     if hasDiscord:
-        DiscordWebhook(url=DiscordWebhookURL,content="Server host has finished shutting down.",username="Server Hoster").execute()
+        DiscordWebhook(url=DiscordWebhookURL, content="Server host has finished shutting down.",
+                       username="Server Hoster").execute()
     print("[Server Hoster] Enter to exit...")

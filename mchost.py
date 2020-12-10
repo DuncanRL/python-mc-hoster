@@ -196,7 +196,7 @@ def consoleInput():
                     customCommand(process, "fullstop")
                 elif inp[:4] == "list":
                     playerListUpdate()
-                    print("Players: ",end="")
+                    print("[Server Hoster] Players: ",end="")
                     if len(playerList) == 1:
                         if playerList[0] == "":
                             print("Nobody Online")
@@ -277,7 +277,7 @@ class ReaderBot(discord.Client):
     global discordChannel
 
     async def on_ready(self):
-        print("Logged on as", self.user)
+        print("[Server Hoster] Discord bot logged on as", self.user)
 
     async def on_message(self, message):
         if message.channel.id == int(discordChannel):
@@ -286,7 +286,6 @@ class ReaderBot(discord.Client):
             if content == "!list":
                 if serverLoaded:
                     playerList = playerListUpdate()
-                    print("Got player list")
                     if playerList[0] == "":
                         totalPlayers = 0
                     else:
